@@ -1,0 +1,34 @@
+---
+ - hosts: all
+   become: true
+   tasks:
+     - name: Add docker group to current user
+       group: 
+         name: docker
+         state: present
+
+     - name: Add user to the group
+       user:
+         name: punopaughey
+         groups: docker
+         append: yes
+     
+     - name: change permission of docker.sock
+       file:
+         path: /var/run/docker.sock
+         state: file
+         owner: root
+         group: docker
+         mode: "666"
+                 
+     - name: Copy Dockerfile
+       copy:
+         src: Dockerfile
+         dest: /tmp/Dockerfile
+
+     - name: Build Docker Image
+       docker_image:
+         path: /tmp
+         name: my-web-db-app
+         state: present        
+       register: docker_image
